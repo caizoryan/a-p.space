@@ -1,6 +1,7 @@
 lockfileVersion: 5.4
 
 specifiers:
+  '@types/p5': ^1.5.0
   arena-ts: ^0.1.4
   p5: ^1.6.0
   solid-js: ^1.6.10
@@ -9,6 +10,7 @@ specifiers:
   vite-plugin-solid: ^2.5.0
 
 dependencies:
+  '@types/p5': 1.5.0
   arena-ts: 0.1.4
   p5: 1.6.0
   solid-js: 1.6.10
@@ -570,6 +572,10 @@ packages:
       '@jridgewell/resolve-uri': 3.1.0
       '@jridgewell/sourcemap-codec': 1.4.14
     dev: true
+
+  /@types/p5/1.5.0:
+    resolution: {integrity: sha512-EhaRGjqGcv5lKWvBUfC4Oxi2J5T1C1HuoQnJCdxJJMrRf+HTVdh7hCgBo88nHe6LbUXxkrxVj9tc1zOuemefFA==}
+    dev: false
 
   /ansi-styles/3.2.1:
     resolution: {integrity: sha512-VT0ZI6kZRdTh8YyJw3SMbYm/u+NqfsAxEpWO0Pf9sq8/e94WxxOpPKx9FR1FlyCtOVDNOQ+8ntlqFxiRc+r5qA==}

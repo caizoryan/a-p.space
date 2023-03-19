@@ -15,32 +15,33 @@ import { ArenaChannelContents, ArenaClient, ArenaBlock } from "arena-ts";
 import { Layout } from "./Generator/Layout";
 import { getParsedText } from "./Parser";
 import { getObject, quickUpdate, updateChildren } from "./Generator/Utils";
+import { P5 } from "./P5";
+
+const [width, setWidth] = createSignal(100);
+const [height, setHeight] = createSignal(100);
 
 const state = createMutable<State>([
   {
     index: 0,
     name: "background",
     styles: {
-      position: "fixed",
-      top: "0",
-      left: "0",
-      width: "40vw",
-      height: "100vh",
+      width: `100vw`,
+      height: `100vh`,
     },
-    class: "background",
     active: true,
   },
   {
     index: 1,
     name: "index",
     styles: {
-      position: "fixed",
+      position: "absolute",
       top: "40vh",
       left: "30vw",
       width: "40vw",
       height: "10vh",
       border: "4px dashed rgb(245, 245, 245)",
       padding: "10px",
+      transition: "all 300ms ease",
     },
     active: true,
   },
@@ -102,11 +103,9 @@ function initIndex(index: ArenaBlock[]) {
 
 function generateBox(channelSlug: string) {
   // generate a random box and append to state
-  let top, left;
-  getLastTop() > 50
-    ? (top = `${random(30) + 30}vh`)
-    : (top = `${random(30)}vh`);
-  left = `${random(10) + getLastLeft() + getLastWidth()}vw`;
+
+  state[0].styles.height = `${parseInt(state[0].styles.height) + 80}vh`;
+  pushEverythingDown(getLastHeight() + 10);
 
   if (getObject(state, channelSlug) === undefined)
     state.push({
@@ -114,8 +113,8 @@ function generateBox(channelSlug: string) {
       name: channelSlug,
       styles: {
         position: "absolute",
-        top: top,
-        left: left,
+        top: "10vh",
+        left: `${random(40)}vw`,
         width: "50vw",
         height: "40vh",
         backgroundColor: "yellow",
@@ -138,7 +137,6 @@ function generateBox(channelSlug: string) {
         : console.log("failed to fetch");
     });
   // expand the page to fit new content
-  quickUpdate(state, "background", [["width", `${parseInt(left) + 60}vh`]]);
 }
 function executeDotFiles(content: ArenaBlock[], channelSlug: string) {
   for (const x of content) {
@@ -156,9 +154,12 @@ const App: Component = () => {
   return (
     <>
       <div style="position: fixed; bottom: 10px; left: 10px; font-family: mono; font-size: 12px; ">
-        width: {window.innerWidth}, height: {window.innerHeight}
+        width: {width()}, height: {height()}
       </div>
-      <div id="scroll" style="overflow: scroll">
+      <div
+        id="scroll"
+        style={`overflow-y: scroll; width: 100vw; height: 100vh; position: fixed; top: 0; left: 0`}
+      >
         <Layout state={state}></Layout>
       </div>
     </>
@@ -175,5 +176,11 @@ const getLastWidth = (): number =>
 const getLastHeight = (): number =>
   parseInt(state[state.length - 1].styles.height);
 const random = (num: number): number => Math.random() * num;
+function pushEverythingDown(value: number) {
+  for (const box of state) {
+    if (box.styles.position === "absolute")
+      box.styles.top = `${parseInt(box.styles.top) + value}vh`;
+  }
+}
 
 export { generateBox };
