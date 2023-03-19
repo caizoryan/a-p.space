@@ -6,11 +6,10 @@ function getParsedText(text: string): JSXElement {
   let outputWords = [];
   let where: "word" | "name" = "word";
   for (const word of words) {
-    let letters = word.split("");
     if (where === "word") {
-      if (letters[0] === "#" && letters[letters.length - 1] === "#") {
+      if (word.charAt(0) === "#" && word.charAt(word.length - 1) === "#") {
         outputWords.push(extractLink(word.substring(1)));
-      } else if (letters[0] === "#") {
+      } else if (word.charAt(0) === "#") {
         outputWords.push({
           type: "link",
           word: word.substring(1),
@@ -22,7 +21,7 @@ function getParsedText(text: string): JSXElement {
         outputWords.push({ type: "word", word: word, link: "", linkType: "" });
       }
     } else if (where == "name") {
-      if (letters[letters.length - 1] === "#") {
+      if (word.charAt(word.length - 1) === "#") {
         let toPush = extractLink(word);
         outputWords[outputWords.length - 1].word += ` ${toPush.word}`;
         outputWords[outputWords.length - 1].link = toPush.link;

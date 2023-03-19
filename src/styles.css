@@ -8,7 +8,8 @@
   src: url("./dotItalic.otf") format("opentype");
 }
 * {
-  font-family: "dot";
+  font-family: "dotItalic";
+  font-size: 24px;
   padding: 0;
   margin: 0;
 }
