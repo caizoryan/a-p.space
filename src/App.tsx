@@ -2,10 +2,10 @@ import {
   For,
   Component,
   JSXElement,
-  onMount,
   Switch,
   Match,
   createSignal,
+  Show,
 } from "solid-js";
 import { render } from "solid-js/web";
 import { createMutable } from "solid-js/store";
@@ -19,6 +19,8 @@ import { P5 } from "./P5";
 
 const [width, setWidth] = createSignal(100);
 const [height, setHeight] = createSignal(100);
+
+type Renderer = Component<{ content: ArenaBlock[]; slug: string }>;
 
 const state = createMutable<State>([
   {
@@ -52,7 +54,14 @@ const arena = new ArenaClient({
 });
 
 // components
-const DefaultRenderer: Component<{ content: ArenaBlock[] }> = (props) => {
+const DefaultRenderer: Renderer = (props) => {
+  let dimensions = { w: 60, h: 60 };
+  pushEverythingDown(dimensions.h);
+  quickUpdate(state, props.slug, [
+    ["width", `${dimensions.w}vw`],
+    ["height", `${dimensions.h}vh`],
+    ["top", "10vh"],
+  ]);
   let style = "";
   for (const x of props.content) {
     if (x.title === ".stylesheet" && x.content) style = x.content;
@@ -79,6 +88,128 @@ const DefaultRenderer: Component<{ content: ArenaBlock[] }> = (props) => {
     </div>
   );
 };
+const NavigationRenderer: Renderer = (props) => {
+  let dimensions = { w: 60, h: 8 };
+  quickUpdate(state, props.slug, [
+    ["width", `${dimensions.w}vw`],
+    ["height", `${dimensions.h}vh`],
+    ["top", "90vh"],
+    ["left", `${100 - (dimensions.w + 2)}vw`],
+    ["position", "fixed"],
+    ["display", "flex"],
+    ["alignItems", "center"],
+    ["zIndex", "9999"],
+  ]);
+  let style = `
+    .nav{
+      display: flex;
+      justify-content: flex-end;
+      width: 100%;
+    }
+    button{
+      all: unset;
+      border: 1px dashed rgb(200, 200, 200);
+      padding: 10px;
+      margin: 1vw;
+    }
+    button:hover{
+    cursor: pointer;
+      background: black;
+      color: white;
+    }
+`;
+  for (const x of props.content) {
+    if (x.title === ".stylesheet" && x.content) style = x.content;
+  }
+  return (
+    <div class="nav">
+      <style scoped>{style}</style>
+      <For each={props.content}>
+        {(btn) => (
+          <button onClick={() => generateBox(btn.slug)}>{btn.title}</button>
+        )}
+      </For>
+    </div>
+  );
+};
+const ProjectsRender: Renderer = (props) => {
+  console.log(props.content);
+  let dimensions = { w: 20, h: 80 };
+  quickUpdate(state, props.slug, [
+    ["width", `${dimensions.w}vw`],
+    ["height", `${dimensions.h}vh`],
+    ["top", "2vh"],
+    ["left", `2vw`],
+    ["position", "fixed"],
+  ]);
+  let style = `
+    .projects{
+      position: relative;
+      width: 100%;
+      height: 100%;
+      border: 2px dotted black;
+      transition: all 400ms ease-in-out;
+    }
+    .projects-container{
+      overflow-y: scroll;
+      height: 100%;
+      width: 100%;
+    }
+    button{
+      all: unset;
+      border: 1px dashed rgb(200, 200, 200);
+      padding: 10px;
+      margin: 1vw;
+      background: black;
+      color: yellow;
+    }
+    button:hover{
+      background: yellow;
+      color: black;
+      cursor: pointer;
+    }
+    .close{
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      font-size: 10px;
+      cursor: pointer;
+    }
+    .closed{
+      width: 10%;
+      height: 10%;
+      position: relative;
+      transition: all 400ms ease-in-out;
+    }
+`;
+  const [closed, setClosed] = createSignal(false);
+  return (
+    <>
+      <div class={closed() ? "closed" : "projects"}>
+        <style scoped>{style}</style>
+        <p class="close" onClick={() => setClosed(!closed())}>
+          {closed() ? "+" : "close"}
+        </p>
+        <Show when={!closed()}>
+          <div class="projects-container">
+            <For each={props.content}>
+              {(btn) => (
+                <button onClick={() => generateBox(btn.slug)}>
+                  {btn.title}
+                </button>
+              )}
+            </For>
+          </div>
+        </Show>
+      </div>
+    </>
+  );
+};
+
+const renderers = new Map<string, Renderer>([
+  ["navigation-4ids8d9_1cy", NavigationRenderer],
+  ["projects-fat_s9oqj8", ProjectsRender],
+]);
 
 function init() {
   arena
@@ -102,12 +233,13 @@ function initIndex(index: ArenaBlock[]) {
 }
 
 function generateBox(channelSlug: string) {
-  // generate a random box and append to state
+  if (getObject(state, channelSlug) === undefined) {
+    // TODO use next height instead of last height
+    state[0].styles.height = `${
+      parseInt(state[0].styles.height) + getLastHeight() + 10
+    }vh`;
+    pushEverythingDown(10);
 
-  state[0].styles.height = `${parseInt(state[0].styles.height) + 80}vh`;
-  pushEverythingDown(getLastHeight() + 10);
-
-  if (getObject(state, channelSlug) === undefined)
     state.push({
       index: state.length,
       name: channelSlug,
@@ -115,28 +247,43 @@ function generateBox(channelSlug: string) {
         position: "absolute",
         top: "10vh",
         left: `${random(40)}vw`,
-        width: "50vw",
-        height: "40vh",
-        backgroundColor: "yellow",
-        transition: "all 300ms ease",
+        width: "10vw",
+        height: "10vh",
+        // border: "1px solid black",
+        transition: "all 300ms ease-in-out",
       },
       active: true,
+      children: [<Loading></Loading>],
     });
+    arena
+      .channel(channelSlug)
+      .get()
+      .then((res) => {
+        executeDotFiles(structuredClone(res.contents), channelSlug);
+        res.contents
+          ? renderContent(structuredClone(res.contents), channelSlug)
+          : console.log("failed to fetch");
+      });
+  }
+}
 
-  arena
-    .channel(channelSlug)
-    .get()
-    .then((res) => {
-      executeDotFiles(structuredClone(res.contents), channelSlug);
-      res.contents
-        ? updateChildren(state, channelSlug, [
-            <DefaultRenderer
-              content={structuredClone(res.contents)}
-            ></DefaultRenderer>,
-          ])
-        : console.log("failed to fetch");
-    });
-  // expand the page to fit new content
+function renderContent(content: ArenaBlock[], slug: string) {
+  if (renderers.has(slug)) {
+    let LocalRenderer: Renderer = renderers.get(slug);
+    updateChildren(state, slug, [
+      <LocalRenderer
+        content={structuredClone(content)}
+        slug={slug}
+      ></LocalRenderer>,
+    ]);
+  } else {
+    updateChildren(state, slug, [
+      <DefaultRenderer
+        content={structuredClone(content)}
+        slug={slug}
+      ></DefaultRenderer>,
+    ]);
+  }
 }
 function executeDotFiles(content: ArenaBlock[], channelSlug: string) {
   for (const x of content) {
@@ -149,10 +296,39 @@ function executeDotFiles(content: ArenaBlock[], channelSlug: string) {
   }
 }
 
+const Loading: Component = () => {
+  const style = `
+  .loading{
+    background: grey;
+    animation: load 500ms ease-in-out infinite;
+    height: 100%;
+    width: 100%;
+  }
+  @keyframes load{
+    0%{
+      background: grey;
+    }
+    50%{
+      background: white;
+    }
+    100%{
+      background: grey;
+    }
+  }
+`;
+  return (
+    <div class="loading">
+      <style scoped>{style}</style>
+      <span style="padding: 10px">Loading...</span>
+    </div>
+  );
+};
+
 init();
 const App: Component = () => {
   return (
     <>
+      <P5></P5>
       <div style="position: fixed; bottom: 10px; left: 10px; font-family: mono; font-size: 12px; ">
         width: {width()}, height: {height()}
       </div>
@@ -176,6 +352,7 @@ const getLastWidth = (): number =>
 const getLastHeight = (): number =>
   parseInt(state[state.length - 1].styles.height);
 const random = (num: number): number => Math.random() * num;
+
 function pushEverythingDown(value: number) {
   for (const box of state) {
     if (box.styles.position === "absolute")
