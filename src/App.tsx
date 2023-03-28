@@ -134,7 +134,11 @@ const NavigationRenderer: Renderer = (props) => {
 };
 const ProjectsRender: Renderer = (props) => {
   console.log(props.content);
-  let dimensions = { w: 20, h: 80 };
+  let dimensions = { w: 30, h: 80 };
+  let style = ``;
+  for (const x of props.content) {
+    if (x.title === ".stylesheet" && x.content) style = x.content;
+  }
   quickUpdate(state, props.slug, [
     ["width", `${dimensions.w}vw`],
     ["height", `${dimensions.h}vh`],
@@ -142,62 +146,25 @@ const ProjectsRender: Renderer = (props) => {
     ["left", `2vw`],
     ["position", "fixed"],
   ]);
-  let style = `
-    .projects{
-      position: relative;
-      width: 100%;
-      height: 100%;
-      border: 2px dotted black;
-      transition: all 400ms ease-in-out;
-    }
-    .projects-container{
-      overflow-y: scroll;
-      height: 100%;
-      width: 100%;
-    }
-    button{
-      all: unset;
-      border: 1px dashed rgb(200, 200, 200);
-      padding: 10px;
-      margin: 1vw;
-      background: black;
-      color: yellow;
-    }
-    button:hover{
-      background: yellow;
-      color: black;
-      cursor: pointer;
-    }
-    .close{
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      font-size: 10px;
-      cursor: pointer;
-    }
-    .closed{
-      width: 10%;
-      height: 10%;
-      position: relative;
-      transition: all 400ms ease-in-out;
-    }
-`;
   const [closed, setClosed] = createSignal(false);
   return (
     <>
       <div class={closed() ? "closed" : "projects"}>
         <style scoped>{style}</style>
         <p class="close" onClick={() => setClosed(!closed())}>
-          {closed() ? "+" : "close"}
+          {closed() ? "open" : "close"}
         </p>
         <Show when={!closed()}>
           <div class="projects-container">
             <For each={props.content}>
-              {(btn) => (
-                <button onClick={() => generateBox(btn.slug)}>
-                  {btn.title}
-                </button>
-              )}
+              {(btn) => {
+                if (btn.class === "Channel")
+                  return (
+                    <button onClick={() => generateBox(btn.slug)}>
+                      {btn.title}
+                    </button>
+                  );
+              }}
             </For>
           </div>
         </Show>
