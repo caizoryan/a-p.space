@@ -8,7 +8,7 @@ export const P5: Component = () => {
     };
     p.draw = () => {
       p.background(255);
-      p.strokeWeight(0.1);
+      p.strokeWeight(0.4);
       p.line(p.mouseX, 0, p.mouseX, p.height);
       p.line(0, p.mouseY, p.width, p.mouseY);
     };
