@@ -25,3 +25,7 @@
 *::-webkit-scrollbar {
   display: none;
 }
+
+a {
+  all: unset;
+}

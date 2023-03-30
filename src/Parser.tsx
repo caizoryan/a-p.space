@@ -52,7 +52,17 @@ function getParsedText(text: string): JSXElement {
           </span>
         );
       else if (x.linkType === "link")
-        elems.push(<a href={x.link}>{x.word + " "}</a>);
+        elems.push(
+          <>
+            <>{x.word}</>
+            <a
+              href={x.link}
+              style="font-family: 'arialNarrow'; font-size: 10px; color: red;cursor: pointer; "
+            >
+              LINK{" "}
+            </a>
+          </>
+        );
     }
   }
   return <>{...elems}</>;

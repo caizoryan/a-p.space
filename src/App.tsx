@@ -66,7 +66,8 @@ const DefaultRenderer: Renderer = (props) => {
     ["height", `${dimensions.h}vh`],
     ["top", "10vh"],
   ]);
-  let style = `
+  let style = "";
+  let stupidStyle = `
     .full-screen{
       position: absolute; 
       left: 1%;
@@ -136,12 +137,13 @@ const DefaultRenderer: Renderer = (props) => {
       ]);
     }
   }
+  console.log(props.content);
   return (
     <div
       id={props.slug}
       style="background: rgba(240, 240, 240, 100); width: 100%; height: 100%;  position: relative;"
     >
-      <style>{style}</style>
+      <style>{style + stupidStyle}</style>
       <div style="width: 100%; height: 6%;">
         <span
           class="full-screen"
@@ -173,6 +175,13 @@ const DefaultRenderer: Renderer = (props) => {
           {(block) => {
             return (
               <Switch>
+                <Match when={block.class === "Link"}>
+                  <a href={block.source?.url} target="_blank">
+                    <button class={block.title ? block.title : ""}>
+                      {block.title}
+                    </button>
+                  </a>
+                </Match>
                 <Match when={block.class === "Channel"}>
                   <button
                     class={block.title ? block.title : ""}
@@ -182,11 +191,22 @@ const DefaultRenderer: Renderer = (props) => {
                   </button>
                 </Match>
                 <Match when={block.class === "Image"}>
-                  <img
-                    class={block.title ? block.title : ""}
-                    style="width: 96%; margin: 2%;"
-                    src={block.image?.display.url}
-                  ></img>
+                  <Switch>
+                    <Match when={full()}>
+                      <img
+                        class={block.title ? block.title : ""}
+                        style="width: 96%; margin: 2%;"
+                        src={block.image?.original.url}
+                      ></img>
+                    </Match>
+                    <Match when={!full()}>
+                      <img
+                        class={block.title ? block.title : ""}
+                        style="width: 96%; margin: 2%;"
+                        src={block.image?.display.url}
+                      ></img>
+                    </Match>
+                  </Switch>
                 </Match>
                 <Match
                   when={block.class === "Text" && block.title?.charAt(0) != "."}
