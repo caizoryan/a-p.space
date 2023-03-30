@@ -74,12 +74,17 @@ const DefaultRenderer: Renderer = (props) => {
           return (
             <Switch>
               <Match when={block.class === "Image"}>
-                <img src={block.image?.thumb.url}></img>
+                <img
+                  class={block.title ? block.title : ""}
+                  src={block.image?.thumb.url}
+                ></img>
               </Match>
               <Match
                 when={block.class === "Text" && block.title?.charAt(0) != "."}
               >
-                {block.content ? getParsedText(block.content) : null}
+                <p class={block.title ? block.title : ""}>
+                  {block.content ? getParsedText(block.content) : null}
+                </p>
               </Match>
             </Switch>
           );

@@ -7,6 +7,12 @@
   font-family: "dotItalic";
   src: url("dotItalic.otf") format("opentype");
 }
+
+@font-face {
+  font-family: "arialNarrow";
+  src: url("arial.ttf") format("truetype");
+}
+
 * {
   font-family: "dot";
   font-size: 24px;
