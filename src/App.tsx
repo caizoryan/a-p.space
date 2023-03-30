@@ -6,6 +6,7 @@ import {
   Match,
   createSignal,
   Show,
+  createEffect,
 } from "solid-js";
 import { render } from "solid-js/web";
 import { createMutable } from "solid-js/store";
@@ -20,6 +21,8 @@ import { Loading } from "./Components";
 
 const [width, setWidth] = createSignal(100);
 const [height, setHeight] = createSignal(100);
+const [summoned, setSummoned] = createSignal("");
+let asideValue = 0;
 
 type Renderer = Component<{ content: ArenaBlock[]; slug: string }>;
 
@@ -38,8 +41,8 @@ const state = createMutable<State>([
     name: "index",
     styles: {
       position: "absolute",
-      top: "40vh",
-      left: "30vw",
+      top: "80vh",
+      left: "2vw",
       width: "40vw",
       height: "10vh",
       border: "4px dashed rgb(245, 245, 245)",
@@ -56,49 +59,157 @@ const arena = new ArenaClient({
 
 // components
 const DefaultRenderer: Renderer = (props) => {
-  let dimensions = { w: 60, h: 60 };
+  let dimensions = { w: 60, h: 70 };
   pushEverythingDown(dimensions.h);
   quickUpdate(state, props.slug, [
     ["width", `${dimensions.w}vw`],
     ["height", `${dimensions.h}vh`],
     ["top", "10vh"],
   ]);
-  let style = "";
+  let style = `
+    .full-screen{
+      position: absolute; 
+      left: 1%;
+      top: 1%;
+      padding: 10px;
+      color: white;
+      border: 1px white solid;
+      font-size: 14px;
+      font-family: 'arialNarrow';
+      letter-spacing: .2em;
+      cursor: pointer;
+      animation: letter 5000ms ease-in-out infinite;
+    }
+    @keyframes letter{
+      0%{
+        letter-spacing: 0.1em;
+        color: rgb(240, 240, 240);
+        border: 1px rgb(240, 240, 240) solid;
+      }
+      50%{
+        letter-spacing: 0.2em;
+        color: white;
+        border: 1px white solid;
+      }
+      100%{
+        letter-spacing: 0.1em;
+        color: rgb(240, 240, 240);
+        border: 1px rgb(240, 240, 240) solid;
+      }
+}`;
   for (const x of props.content) {
     if (x.title === ".stylesheet" && x.content) style = x.content;
   }
+
+  let localAside = 0;
+  const [full, setFull] = createSignal(false);
+  const [aside, setAside] = createSignal(false);
+
+  createEffect(() => {
+    if (summoned() === props.slug && aside()) {
+      openPanel();
+    }
+  });
+
+  function openPanel() {
+    setFull(true);
+    quickUpdate(state, props.slug, [
+      ["width", `96vw`],
+      ["height", `96vh`],
+      ["top", "2vh"],
+      ["left", "2vw"],
+      ["position", "fixed"],
+      ["zIndex", "10"],
+    ]);
+  }
+
+  function closePanel() {
+    setFull(false);
+    if (aside()) {
+      quickUpdate(state, props.slug, [
+        ["width", `96vw`],
+        ["height", dimensions.h + "vh"],
+        ["top", localAside + "vh"],
+        ["left", 100 - localAside + "vw"],
+        ["position", "fixed"],
+        ["zIndex", "2"],
+      ]);
+    }
+  }
   return (
-    <div style="width: 100%; height: 100%; overflow: scroll;">
+    <div
+      id={props.slug}
+      style="background: rgba(240, 240, 240, 100); width: 100%; height: 100%;  position: relative;"
+    >
       <style>{style}</style>
-      <For each={props.content}>
-        {(block) => {
-          return (
-            <Switch>
-              <Match when={block.class === "Channel"}>
-                <button onClick={() => generateBox(block.slug)}>
-                  {block.title}
-                </button>
-              </Match>
-              <Match when={block.class === "Image"}>
-                <img
-                  class={block.title ? block.title : ""}
-                  src={block.image?.thumb.url}
-                ></img>
-              </Match>
-              <Match
-                when={block.class === "Text" && block.title?.charAt(0) != "."}
-              >
-                <p class={block.title ? block.title : ""}>
-                  {block.content ? getParsedText(block.content) : null}
-                </p>
-              </Match>
-            </Switch>
-          );
+      <div style="width: 100%; height: 6%;">
+        <span
+          class="full-screen"
+          onClick={() => {
+            if (full()) {
+              closePanel();
+            } else {
+              if (!aside()) {
+                asideValue += 2;
+                localAside = asideValue;
+              }
+              setAside(true);
+              openPanel();
+            }
+          }}
+        >
+          {full() ? "Set Aside" : "FULLSCREEN"}
+        </span>
+      </div>
+      <div
+        style="width: 100%; height: 92%; margin-top: 1%;overflow: scroll; display: flex; flex-direction: column;"
+        onClick={() => {
+          if (!full() && aside()) {
+            setFull(true);
+          }
         }}
-      </For>
+      >
+        <For each={props.content}>
+          {(block) => {
+            return (
+              <Switch>
+                <Match when={block.class === "Channel"}>
+                  <button
+                    class={block.title ? block.title : ""}
+                    onClick={() => generateBox(block.slug)}
+                  >
+                    {block.title}
+                  </button>
+                </Match>
+                <Match when={block.class === "Image"}>
+                  <img
+                    class={block.title ? block.title : ""}
+                    style="width: 96%; margin: 2%;"
+                    src={block.image?.display.url}
+                  ></img>
+                </Match>
+                <Match
+                  when={block.class === "Text" && block.title?.charAt(0) != "."}
+                >
+                  <p
+                    style="width: 90%; margin: 2%;"
+                    class={block.title ? block.title : ""}
+                  >
+                    {block.content ? getParsedText(block.content) : null}
+                  </p>
+                </Match>
+              </Switch>
+            );
+          }}
+        </For>
+      </div>
     </div>
   );
 };
+createEffect(() => {
+  console.log(summoned());
+});
+
 const NavigationRenderer: Renderer = (props) => {
   let dimensions = { w: 60, h: 8 };
   quickUpdate(state, props.slug, [
@@ -128,7 +239,7 @@ const NavigationRenderer: Renderer = (props) => {
       background: black;
       color: white;
     }
-`;
+  `;
   for (const x of props.content) {
     if (x.title === ".stylesheet" && x.content) style = x.content;
   }
@@ -144,7 +255,6 @@ const NavigationRenderer: Renderer = (props) => {
   );
 };
 const ProjectsRender: Renderer = (props) => {
-  console.log(props.content);
   let dimensions = { w: 30, h: 80 };
   let style = ``;
   for (const x of props.content) {
@@ -158,6 +268,19 @@ const ProjectsRender: Renderer = (props) => {
     ["position", "fixed"],
   ]);
   const [closed, setClosed] = createSignal(false);
+  createEffect(() => {
+    if (!closed()) {
+      quickUpdate(state, props.slug, [
+        ["width", `${dimensions.w}vw`],
+        ["height", `${dimensions.h}vh`],
+      ]);
+    } else {
+      quickUpdate(state, props.slug, [
+        ["width", `2vw`],
+        ["height", `2vh`],
+      ]);
+    }
+  });
   return (
     <>
       <div class={closed() ? "closed" : "projects"}>
@@ -210,21 +333,57 @@ function initIndex(index: ArenaBlock[]) {
   updateChildren(state, "index", [indexContents]);
 }
 
+init();
+const App: Component = () => {
+  return (
+    <>
+      <P5></P5>
+      <div style="position: fixed; bottom: 10px; left: 10px; font-family: mono; font-size: 12px; ">
+        width: {width()}, height: {height()}
+      </div>
+      <div
+        id="scroll"
+        style={`overflow-y: scroll; width: 100vw; height: 100vh; position: fixed; top: 0; left: 0`}
+      >
+        <Layout state={state}></Layout>
+      </div>
+    </>
+  );
+};
+
+const root = document.getElementById("root");
+render(() => <App />, root!);
+
+const getLastTop = (): number => parseInt(state[state.length - 1].styles.top);
+const getLastLeft = (): number => parseInt(state[state.length - 1].styles.left);
+const getLastWidth = (): number =>
+  parseInt(state[state.length - 1].styles.width);
+const getLastHeight = (): number =>
+  parseInt(state[state.length - 1].styles.height);
+const random = (num: number): number => Math.random() * num;
+const scrollToMyRef = (id: string) => {
+  var ref = document.querySelector("#" + id);
+  setTimeout(function () {
+    ref
+      ? ref.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        })
+      : null;
+  }, 100);
+};
+
 function generateBox(channelSlug: string) {
   if (getObject(state, channelSlug) === undefined) {
-    // TODO use next height instead of last height
-    state[0].styles.height = `${
-      parseInt(state[0].styles.height) + getLastHeight() + 10
-    }vh`;
-    pushEverythingDown(10);
-
+    setSummoned("");
+    pushEverythingDown(2);
     state.push({
       index: state.length,
       name: channelSlug,
       styles: {
         position: "absolute",
         top: "10vh",
-        left: `${random(40)}vw`,
+        left: `${31 + random(10)}vw`,
         width: "20vw",
         height: "5vh",
         // border: "1px solid black",
@@ -241,7 +400,21 @@ function generateBox(channelSlug: string) {
         res.contents
           ? renderContent(structuredClone(res.contents), channelSlug)
           : console.log("failed to fetch");
-      });
+      })
+      .then(() => scrollToMyRef(channelSlug));
+  } else {
+    setSummonedTo(channelSlug);
+    scrollToMyRef(channelSlug);
+  }
+}
+function setSummonedTo(channelSlug: string) {
+  if (summoned() === channelSlug) {
+    setSummoned("");
+    setTimeout(() => {
+      setSummoned(channelSlug);
+    }, 10);
+  } else {
+    setSummoned(channelSlug);
   }
 }
 
@@ -274,36 +447,10 @@ function executeDotFiles(content: ArenaBlock[], channelSlug: string) {
   }
 }
 
-init();
-const App: Component = () => {
-  return (
-    <>
-      <P5></P5>
-      <div style="position: fixed; bottom: 10px; left: 10px; font-family: mono; font-size: 12px; ">
-        width: {width()}, height: {height()}
-      </div>
-      <div
-        id="scroll"
-        style={`overflow-y: scroll; width: 100vw; height: 100vh; position: fixed; top: 0; left: 0`}
-      >
-        <Layout state={state}></Layout>
-      </div>
-    </>
-  );
-};
-
-const root = document.getElementById("root");
-render(() => <App />, root!);
-
-const getLastTop = (): number => parseInt(state[state.length - 1].styles.top);
-const getLastLeft = (): number => parseInt(state[state.length - 1].styles.left);
-const getLastWidth = (): number =>
-  parseInt(state[state.length - 1].styles.width);
-const getLastHeight = (): number =>
-  parseInt(state[state.length - 1].styles.height);
-const random = (num: number): number => Math.random() * num;
-
 function pushEverythingDown(value: number) {
+  state[0].styles.height = `${
+    parseInt(state[0].styles.height) + getLastHeight()
+  }vh`;
   for (const box of state) {
     if (box.styles.position === "absolute")
       box.styles.top = `${parseInt(box.styles.top) + value}vh`;
