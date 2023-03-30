@@ -2,7 +2,7 @@ const Loading: Component = () => {
   const style = `
   .loading{
     background: grey;
-    animation: load 400ms ease-in-out infinite;
+    animation: load 800ms ease-in-out infinite;
     height: 40px;
     width: max-content;
 color: black;
@@ -14,7 +14,7 @@ color: black;
     }
     50%{
       background: black;
-      transform: rotate(0deg);
+      transform: rotate(-10deg);
     }
     100%{
       background: yellow;

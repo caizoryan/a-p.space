@@ -23,7 +23,6 @@ const [width, setWidth] = createSignal(100);
 const [height, setHeight] = createSignal(100);
 const [summoned, setSummoned] = createSignal("");
 let asideValue = 0;
-
 type Renderer = Component<{ content: ArenaBlock[]; slug: string }>;
 
 const state = createMutable<State>([
@@ -50,12 +49,11 @@ const state = createMutable<State>([
       transition: "all 300ms ease",
     },
     active: true,
+    children: [<Loading></Loading>],
   },
 ]);
 
-const arena = new ArenaClient({
-  token: "FCPRhgQEv6m8b7Wqv0OWf1nKqRFfYWu4N0QpfYRd1TY",
-});
+const arena = new ArenaClient();
 
 // components
 const DefaultRenderer: Renderer = (props) => {
@@ -66,7 +64,7 @@ const DefaultRenderer: Renderer = (props) => {
     ["height", `${dimensions.h}vh`],
     ["top", "10vh"],
   ]);
-  let style = "";
+  const [style, setStyle] = createSignal("");
   let stupidStyle = `
     .full-screen{
       position: absolute; 
@@ -76,7 +74,7 @@ const DefaultRenderer: Renderer = (props) => {
       color: white;
       border: 1px white solid;
       font-size: 14px;
-      font-family: 'arialNarrow';
+      font-family: 'Archivo Narrow', sans-serif;
       letter-spacing: .2em;
       cursor: pointer;
       animation: letter 5000ms ease-in-out infinite;
@@ -84,8 +82,8 @@ const DefaultRenderer: Renderer = (props) => {
     @keyframes letter{
       0%{
         letter-spacing: 0.1em;
-        color: rgb(240, 240, 240);
-        border: 1px rgb(240, 240, 240) solid;
+        color: rgb(200, 200, 200);
+        border: 1px rgb(200, 200, 200) solid;
       }
       50%{
         letter-spacing: 0.2em;
@@ -94,12 +92,12 @@ const DefaultRenderer: Renderer = (props) => {
       }
       100%{
         letter-spacing: 0.1em;
-        color: rgb(240, 240, 240);
-        border: 1px rgb(240, 240, 240) solid;
+        color: rgb(200, 200, 200);
+        border: 1px rgb(200, 200, 200) solid;
       }
 }`;
   for (const x of props.content) {
-    if (x.title === ".stylesheet" && x.content) style = x.content;
+    if (x.title === ".stylesheet" && x.content) setStyle(style() + x.content);
   }
 
   let localAside = 0;
@@ -143,7 +141,7 @@ const DefaultRenderer: Renderer = (props) => {
       id={props.slug}
       style="background: rgba(240, 240, 240, 100); width: 100%; height: 100%;  position: relative;"
     >
-      <style>{style + stupidStyle}</style>
+      <style>{style() + stupidStyle}</style>
       <div style="width: 100%; height: 6%;">
         <span
           class="full-screen"
@@ -173,6 +171,9 @@ const DefaultRenderer: Renderer = (props) => {
       >
         <For each={props.content}>
           {(block) => {
+            if (block.description) {
+              setStyle(style() + `.${block.title}{${block.description}}`);
+            }
             return (
               <Switch>
                 <Match when={block.class === "Link"}>
@@ -226,9 +227,6 @@ const DefaultRenderer: Renderer = (props) => {
     </div>
   );
 };
-createEffect(() => {
-  console.log(summoned());
-});
 
 const NavigationRenderer: Renderer = (props) => {
   let dimensions = { w: 60, h: 8 };
