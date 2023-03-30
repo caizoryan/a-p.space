@@ -1,18 +1,18 @@
+@import url("https://fonts.googleapis.com/css2?family=Archivo+Narrow&display=swap");
+
 @font-face {
   font-family: "dot";
-  src: url("dot.otf") format("opentype");
+  src: url("../dot.otf") format("opentype");
 }
 
 @font-face {
   font-family: "dotItalic";
-  src: url("dotItalic.otf") format("opentype");
+  src: url("../dotItalic.otf") format("opentype");
 }
 @font-face {
   font-family: "suisse";
-  src: url("suisse.otf") format("opentype");
+  src: url("../suisse.otf") format("opentype");
 }
-
-@import url("https://fonts.googleapis.com/css2?family=Archivo+Narrow&display=swap");
 
 * {
   font-family: "dot";
