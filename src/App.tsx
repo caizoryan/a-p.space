@@ -16,6 +16,7 @@ import { Layout } from "./Generator/Layout";
 import { getParsedText } from "./Parser";
 import { getObject, quickUpdate, updateChildren } from "./Generator/Utils";
 import { P5 } from "./P5";
+import { Loading } from "./Components";
 
 const [width, setWidth] = createSignal(100);
 const [height, setHeight] = createSignal(100);
@@ -73,6 +74,11 @@ const DefaultRenderer: Renderer = (props) => {
         {(block) => {
           return (
             <Switch>
+              <Match when={block.class === "Channel"}>
+                <button onClick={() => generateBox(block.slug)}>
+                  {block.title}
+                </button>
+              </Match>
               <Match when={block.class === "Image"}>
                 <img
                   class={block.title ? block.title : ""}
@@ -219,8 +225,8 @@ function generateBox(channelSlug: string) {
         position: "absolute",
         top: "10vh",
         left: `${random(40)}vw`,
-        width: "10vw",
-        height: "10vh",
+        width: "20vw",
+        height: "5vh",
         // border: "1px solid black",
         transition: "all 300ms ease-in-out",
       },
@@ -267,34 +273,6 @@ function executeDotFiles(content: ArenaBlock[], channelSlug: string) {
     }
   }
 }
-
-const Loading: Component = () => {
-  const style = `
-  .loading{
-    background: grey;
-    animation: load 500ms ease-in-out infinite;
-    height: 100%;
-    width: 100%;
-  }
-  @keyframes load{
-    0%{
-      background: grey;
-    }
-    50%{
-      background: white;
-    }
-    100%{
-      background: grey;
-    }
-  }
-`;
-  return (
-    <div class="loading">
-      <style scoped>{style}</style>
-      <span style="padding: 10px">Loading...</span>
-    </div>
-  );
-};
 
 init();
 const App: Component = () => {

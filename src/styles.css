@@ -17,5 +17,11 @@
   font-family: "dot";
   font-size: 24px;
   padding: 0;
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none;
   margin: 0;
+}
+
+*::-webkit-scrollbar {
+  display: none;
 }
