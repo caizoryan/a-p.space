@@ -365,6 +365,7 @@ const App: Component = () => {
       >
         <Layout state={state}></Layout>
       </div>
+      <div class="sorry">Little bit more screen space please?</div>
     </>
   );
 };

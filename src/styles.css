@@ -30,3 +30,24 @@
 a {
   all: unset;
 }
+
+.sorry {
+  width: 100vw;
+  height: 100vh;
+  font-size: 30px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 999;
+  background: black;
+  color: white;
+  justify-content: center;
+  align-items: center;
+  display: none;
+}
+
+@media only screen and (max-width: 1000px) {
+  .sorry {
+    display: flex;
+  }
+}
