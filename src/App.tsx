@@ -9,166 +9,53 @@ import {
   createEffect,
 } from "solid-js";
 import { render } from "solid-js/web";
-import { createMutable } from "solid-js/store";
-import type { State } from "./Generator/Types";
 import "./styles.css";
-import { ArenaChannelContents, ArenaClient, ArenaBlock } from "arena-ts";
+import { ArenaClient, ArenaBlock } from "arena-ts";
 import { Layout } from "./Generator/Layout";
 import { getParsedText } from "./Parser";
 import { getObject, quickUpdate, updateChildren } from "./Generator/Utils";
 import { P5 } from "./P5";
 import { Loading } from "./Components";
+import { FullButton } from "./FullButton";
+import { state } from "./State";
 
-const [width, setWidth] = createSignal(100);
-const [height, setHeight] = createSignal(100);
 const [summoned, setSummoned] = createSignal("");
-let asideValue = 0;
-type Renderer = Component<{ content: ArenaBlock[]; slug: string }>;
 
-const state = createMutable<State>([
-  {
-    index: 0,
-    name: "background",
-    styles: {
-      width: `100vw`,
-      height: `100vh`,
-    },
-    active: true,
-  },
-  {
-    index: 1,
-    name: "index",
-    styles: {
-      position: "absolute",
-      top: "80vh",
-      left: "2vw",
-      width: "40vw",
-      height: "10vh",
-      border: "4px dashed rgb(245, 245, 245)",
-      padding: "10px",
-      transition: "all 300ms ease",
-    },
-    active: true,
-    children: [<Loading></Loading>],
-  },
-]);
+type Renderer = Component<{ content: ArenaBlock[]; slug: string }>;
 
 const arena = new ArenaClient();
 
 // components
 const DefaultRenderer: Renderer = (props) => {
   let dimensions = { w: 60, h: 70 };
-  pushEverythingDown(dimensions.h);
-  quickUpdate(state, props.slug, [
-    ["width", `${dimensions.w}vw`],
-    ["height", `${dimensions.h}vh`],
-    ["top", "10vh"],
-  ]);
+  if (!executeDotFiles(props.content, props.slug)) {
+    pushEverythingDown(dimensions.h);
+    quickUpdate(state, props.slug, [
+      ["width", `${dimensions.w}vw`],
+      ["height", `${dimensions.h}vh`],
+      ["top", "10vh"],
+    ]);
+  }
+  quickUpdate(state, props.slug, [["top", "10vh"]]);
   const [style, setStyle] = createSignal("");
-  let stupidStyle = `
-    .full-screen{
-      position: absolute; 
-      left: 1%;
-      top: 1%;
-      padding: 10px;
-      color: white;
-      border: 1px white solid;
-      font-size: 14px;
-      font-family: 'Archivo Narrow', sans-serif;
-      letter-spacing: .2em;
-      cursor: pointer;
-      animation: letter 5000ms ease-in-out infinite;
-    }
-    @keyframes letter{
-      0%{
-        letter-spacing: 0.1em;
-        color: rgb(200, 200, 200);
-        border: 1px rgb(200, 200, 200) solid;
-      }
-      50%{
-        letter-spacing: 0.2em;
-        color: white;
-        border: 1px white solid;
-      }
-      100%{
-        letter-spacing: 0.1em;
-        color: rgb(200, 200, 200);
-        border: 1px rgb(200, 200, 200) solid;
-      }
-}`;
+  const [full, setFull] = createSignal(false);
+
   for (const x of props.content) {
     if (x.title === ".stylesheet" && x.content) setStyle(style() + x.content);
   }
 
-  let localAside = 0;
-  const [full, setFull] = createSignal(false);
-  const [aside, setAside] = createSignal(false);
-
-  createEffect(() => {
-    if (summoned() === props.slug && aside()) {
-      openPanel();
-    }
-  });
-
-  function openPanel() {
-    setFull(true);
-    quickUpdate(state, props.slug, [
-      ["width", `96vw`],
-      ["height", `96vh`],
-      ["top", "2vh"],
-      ["left", "2vw"],
-      ["position", "fixed"],
-      ["zIndex", "10"],
-    ]);
-  }
-
-  function closePanel() {
-    setFull(false);
-    if (aside()) {
-      quickUpdate(state, props.slug, [
-        ["width", `96vw`],
-        ["height", dimensions.h + "vh"],
-        ["top", localAside + "vh"],
-        ["left", 100 - localAside + "vw"],
-        ["position", "fixed"],
-        ["zIndex", "2"],
-      ]);
-    }
-  }
-  console.log(props.content);
   return (
     <div
       id={props.slug}
       style="background: rgba(240, 240, 240, 100); width: 100%; height: 100%;  position: relative;"
     >
-      <style>{style() + stupidStyle}</style>
-      <div style="width: 100%; height: 6%;">
-        <span
-          class="full-screen"
-          onClick={() => {
-            if (full()) {
-              closePanel();
-            } else {
-              if (!aside()) {
-                asideValue += 2;
-                localAside = asideValue;
-              }
-              setAside(true);
-              openPanel();
-            }
-          }}
-        >
-          {full() ? "Set Aside" : "FULLSCREEN"}
-        </span>
-      </div>
-      <div
-        style="width: 100%; height: 92%; margin-top: 1%;overflow: scroll; display: flex; flex-direction: column;"
-        onClick={() => {
-          if (!full() && aside()) {
-            setFull(true);
-          }
-        }}
-      >
+      <style>{style()}</style>
+      <FullButton
+        dimensions={dimensions}
+        slug={props.slug}
+        setFull={setFull}
+      ></FullButton>
+      <div style="width: 100%; height: 92%; margin-top: 1%;overflow: scroll; display: flex; flex-direction: column;">
         <For each={props.content}>
           {(block) => {
             if (block.description) {
@@ -356,9 +243,6 @@ const App: Component = () => {
   return (
     <>
       <P5></P5>
-      <div style="position: fixed; bottom: 10px; left: 10px; font-family: mono; font-size: 12px; ">
-        width: {width()}, height: {height()}
-      </div>
       <div
         id="scroll"
         style={`overflow-y: scroll; width: 100vw; height: 100vh; position: fixed; top: 0; left: 0`}
@@ -415,7 +299,6 @@ function generateBox(channelSlug: string) {
       .channel(channelSlug)
       .get()
       .then((res) => {
-        executeDotFiles(structuredClone(res.contents), channelSlug);
         res.contents
           ? renderContent(structuredClone(res.contents), channelSlug)
           : console.log("failed to fetch");
@@ -456,14 +339,18 @@ function renderContent(content: ArenaBlock[], slug: string) {
   }
 }
 function executeDotFiles(content: ArenaBlock[], channelSlug: string) {
+  let pushed = false;
   for (const x of content) {
     if (x.title === ".width" && x.content) {
       quickUpdate(state, channelSlug, [["width", x.content]]);
     }
     if (x.title === ".height" && x.content) {
       quickUpdate(state, channelSlug, [["height", x.content]]);
+      pushed = true;
+      pushEverythingDown(parseInt(x.content));
     }
   }
+  return pushed;
 }
 
 function pushEverythingDown(value: number) {
@@ -476,4 +363,4 @@ function pushEverythingDown(value: number) {
   }
 }
 
-export { generateBox };
+export { generateBox, summoned };

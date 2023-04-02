@@ -1,4 +1,4 @@
-const Loading: Component = () => {
+const Loading = () => {
   const style = `
   .loading{
     background: grey;

@@ -46,6 +46,7 @@ function getParsedText(text: string): JSXElement {
             onClick={() => {
               generateBox(x.link);
             }}
+            class="channel-button"
             style="cursor: pointer"
           >
             {"((" + x.word + ")) "}
