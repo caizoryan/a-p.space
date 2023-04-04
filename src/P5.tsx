@@ -13,7 +13,7 @@ export const P5: Component = () => {
       p.frameRate(20);
     };
     p.draw = () => {
-      p.background(255, 1);
+      p.background(255, 10);
       p.strokeWeight(0.1);
       p.fill(0, 27);
       if (p.random() > 0.85)
@@ -27,15 +27,16 @@ export const P5: Component = () => {
         pos1.x + p.map(p.mouseY, 0, p.height, -p.height / 2, p.height / 2),
         pos1.y + p.map(p.mouseX, 0, p.width, -p.width / 2, p.width / 2)
       );
-      p.rotate(p.map(p.mouseX, 0, p.width, 0, 3));
+      p.rotate(p.map(p.mouseX, 0, p.width, 0, 5));
       p.circle(200, 200, p.random(5) + 5);
       p.pop();
+
       p.push();
       p.translate(
         pos2.x + p.map(p.mouseY, 0, p.height, -p.height / 2, p.height / 2),
         pos2.y + p.map(p.mouseX, 0, p.width, -p.width / 2, p.width / 2)
       );
-      p.rotate(p.map(p.mouseY, 0, p.height, 0, 3));
+      p.rotate(p.map(p.mouseY, 0, p.height, 0, 8));
       p.circle(200, 200, p.random(5) + 5);
       p.pop();
     };

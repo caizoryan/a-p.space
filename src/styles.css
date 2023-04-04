@@ -32,13 +32,15 @@ a {
 }
 
 .channel-button {
-  animation: slowblink ease-in-out 5000ms infinite;
-  transition: all ease-in-out 500ms;
+  transition: all ease-in-out 200ms;
+  display: inline-block;
+  box-shadow: 5px 5px 50px -7px rgba(0, 0, 0, 0.5);
+  padding: 5px 5px 5px 5px;
 }
 
 .channel-button:hover {
-  color: red;
-  background: black;
+  color: blue;
+  transform: scale(1.5);
 }
 
 .sorry {
@@ -65,11 +67,25 @@ a {
 @keyframes slowblink {
   0% {
     background: rgba(250, 50, 50, 0);
+    box-shadow: 5px 5px 50px -7px rgba(0, 0, 0, 0.5);
+  }
+  30% {
+    background: rgba(250, 50, 50, 0);
+    box-shadow: 5px 5px 50px -7px rgba(0, 0, 0, 0.5);
+    color: black;
   }
   50% {
-    background: rgba(220, 220, 220, 1);
+    background: rgba(0, 0, 0, 1);
+    color: white;
+    box-shadow: 5px 5px 50px -7px rgba(255, 255, 255, 0.5);
+  }
+  69% {
+    background: rgba(0, 0, 0, 1);
+    color: white;
+    box-shadow: 5px 5px 50px -7px rgba(255, 255, 255, 0.5);
   }
   100% {
     background: rgba(250, 50, 50, 0);
+    box-shadow: 5px 5px 50px -7px rgba(0, 0, 0, 0.5);
   }
 }
