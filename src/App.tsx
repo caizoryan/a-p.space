@@ -1,3 +1,12 @@
+// <!--
+//   /~\
+// C oo
+// _( ^)
+// /   ~\
+// -aaryan -->
+//
+// <!-- Hello to whoever is browsing this code -->
+// <!-- I am trying to rewrite and refactor this, need to get rid of all the messiness but have a look around and have fun! -->
 import {
   For,
   Component,
@@ -266,12 +275,12 @@ const getLastHeight = (): number =>
 const random = (num: number): number => Math.random() * num;
 const scrollToMyRef = (id: string) => {
   var ref = document.querySelector("#" + id);
-  setTimeout(function () {
+  setTimeout(function() {
     ref
       ? ref.scrollIntoView({
-          behavior: "smooth",
-          block: "start",
-        })
+        behavior: "smooth",
+        block: "start",
+      })
       : null;
   }, 100);
 };
@@ -354,9 +363,8 @@ function executeDotFiles(content: ArenaBlock[], channelSlug: string) {
 }
 
 function pushEverythingDown(value: number) {
-  state[0].styles.height = `${
-    parseInt(state[0].styles.height) + getLastHeight()
-  }vh`;
+  state[0].styles.height = `${parseInt(state[0].styles.height) + getLastHeight()
+    }vh`;
   for (const box of state) {
     if (box.styles.position === "absolute")
       box.styles.top = `${parseInt(box.styles.top) + value}vh`;
@@ -364,3 +372,21 @@ function pushEverythingDown(value: number) {
 }
 
 export { generateBox, summoned };
+
+// <!--
+// ....................................................
+// ....................................................
+// ........................./\.........................
+// ..................______/__\_______.................
+// ..................||-------------||.................
+// ..................||             ||.................
+// ..................||    \|||/    ||.................
+// ..................||   [ @-@ ]   ||.................
+// ..................||    ( ' )    ||.......       ...
+// ..................||    _(O)_    ||.......|EXIT |...
+// ..................||   / >=< \   ||.......|==>> |...
+// ..................||__/_|_:_|_\__||.................
+// ..................-----------------.................
+// ....................................................
+// ....................................................
+// Monkey with a bowtie in the museum-->
