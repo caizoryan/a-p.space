@@ -17,10 +17,10 @@ const state = createMutable<State>([
     name: "index",
     styles: {
       position: "fixed",
-      top: "80vh",
+      top: "70vh",
       left: "2vw",
       width: "40vw",
-      height: "10vh",
+      height: "20vh",
       border: "4px dashed rgb(245, 245, 245)",
       padding: "10px",
       transition: "all 300ms ease",

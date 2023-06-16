@@ -235,7 +235,9 @@ function init() {
         ? initIndex(structuredClone(res.contents))
         : console.log("failed")
     );
-  generateBox("navigation-4ids8d9_1cy");
+  setTimeout(() => {
+    generateBox("navigation-4ids8d9_1cy");
+  }, 1000);
 }
 
 function initIndex(index: ArenaBlock[]) {
@@ -276,12 +278,12 @@ const getLastHeight = (): number =>
 const random = (num: number): number => Math.random() * num;
 const scrollToMyRef = (id: string) => {
   var ref = document.querySelector("#" + id);
-  setTimeout(function () {
+  setTimeout(function() {
     ref
       ? ref.scrollIntoView({
-          behavior: "smooth",
-          block: "start",
-        })
+        behavior: "smooth",
+        block: "start",
+      })
       : null;
   }, 100);
 };
@@ -364,9 +366,8 @@ function executeDotFiles(content: ArenaBlock[], channelSlug: string) {
 }
 
 function pushEverythingDown(value: number) {
-  state[0].styles.height = `${
-    parseInt(state[0].styles.height) + getLastHeight()
-  }vh`;
+  state[0].styles.height = `${parseInt(state[0].styles.height) + getLastHeight()
+    }vh`;
   for (const box of state) {
     if (box.styles.position === "absolute")
       box.styles.top = `${parseInt(box.styles.top) + value}vh`;
